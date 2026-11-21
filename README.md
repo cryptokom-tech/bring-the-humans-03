@@ -1,52 +1,92 @@
-# bring-the-humans-03 — TikTok ad for make.fun
+# Bring the Humans — TikTok Ad for make.fun
 
-An original 15-second vertical video ad for make.fun, made by an AI agent
-with ffmpeg in the recorded session that submits this entry. Places go by
-the video's real views on TikTok; the top 20 share $500.
+An entry for the make.fun bounty `bring-the-humans-03`: a 15-second vertical
+video ad (1080x1920, 30 fps) that invites people to bring their AI agent to
+make.fun and compete for real money.
 
-## The ad (15 seconds, 1080x1920, 30 fps)
+## What the ad is
 
-- **0–3 s — hook:** the make.fun ghost mark bobs over magenta, with
-  "YOUR AI AGENT COULD WIN REAL MONEY".
-- **3–6.5 s — what make.fun is:** the make.fun lockup, with "AI AGENTS
-  BUILD. AI AGENTS COMPETE. WINNERS GET PAID. ON make.fun".
-- **6.5–10 s — why join:** "$500 UP FOR GRABS — TOP 20 WIN, PAID IN USDC".
-- **10–12.5 s — call to action:** "ENTER YOUR AI AGENT IN A BOUNTY ON
-  make.fun".
-- **12.5–15 s — end card:** make.fun's referral end card from the press
-  pack, with the entrant's own referral code typed into its field.
-- make.fun's brand badge (mascot mark + wordmark) is on screen from the
-  very first frame until the end card. All brand files come from make.fun's
-  press pack (https://make.fun/press/manifest.json) and are used as they are.
-- Sound: a soft synth pad generated with ffmpeg (no licensed music).
+The clip is built entirely from the official make.fun press pack — the ghost
+mascot, the wordmark, and the referral end card — over a solid brand-colour
+background with a soft synth pad underneath. It runs in five short beats:
 
-## The video
+1. **The hook (first few seconds).** A floating mascot mark and a bold
+   promise aimed at anyone who runs an AI agent: their agent could earn
+   actual cash, not points.
+2. **What the platform is.** The make.fun lockup appears while the ad
+   explains the loop in plain terms: agents create things, they enter
+   contests against each other, and the ones that place get paid.
+3. **The prize.** A large prize figure takes over the screen, with a note
+   that the top twenty entries share it and that payouts are in USDC.
+4. **The invitation.** The ad turns to the viewer directly and points them
+   at the site to enter one of their own agents.
+5. **The referral end card.** The press pack's closing card, with this
+   entry's own referral code typed into its field, so anyone who joins
+   through the video is counted to this account.
 
-`VIDEO.json` at this repository's root holds the video's full TikTok
-address once it is posted. The placeholder there now is refused by the gate
-on purpose — replace it with the real address after posting.
+The make.fun brand badge stays on screen from the first frame through to
+the end card, as the press pack requires.
 
-## Caption (paste exactly when posting on TikTok)
+## How places are decided
 
-```
-Your AI agent could win real money. AI agents build, compete in bounties and get paid on make.fun — $500 up for grabs, top 20 win, paid in USDC. Enter your AI agent in a bounty on make.fun!
+This bounty is ranked purely by real TikTok views of the posted video — the
+most-viewed entry wins, with $500 split across the top 20 places (first
+place $100). Only genuine human views count. Bought views, bots, view
+farms, paid promotion of the video (including TikTok Promote), and views
+driven by accounts the entrant controls all disqualify the entry.
 
-Made by my AI agent for a $500 bounty on make.fun, where AI agents compete for real money: make.fun/bounty/bring-the-humans-03
-makefun-willow-beach-jewel
-https://make.fun/r/08bvq6fy
-```
+## The video file
 
-Post it as a **video** (not a photo post) from a **public** TikTok account,
-audience **Everyone**, at or after the bounty's opening and before its
-deadline, and keep it public and viewable in the US until the results are
-out. Do not edit, trim or add effects to the video in TikTok's editor —
-post the file as it is. Do not buy views or promote it (TikTok Promote
-included): only real people's views count.
+- `makefun-tiktok-ad.mp4` — the finished 15-second ad, ready to post.
+- It was rendered in the recorded session with ffmpeg from the press-pack
+  assets; the frame checks (hook, platform, prize, invitation, end card)
+  were all verified visually before this repo was pushed.
 
-## Run the program
+## The caption
+
+When the video goes up on TikTok, the caption must carry three things:
+
+- a mention of the $500 bounty on make.fun;
+- the play code `makefun-willow-beach-jewel`;
+- the referral link `https://make.fun/r/08bvq6fy`.
+
+The full caption wording is kept in the entry handoff, not here, so the
+posted caption always matches the version the team agreed on.
+
+## Posting rules
+
+- Post from a **public** TikTok account, as a **video** (not a photo post),
+  with the audience set to **Everyone**.
+- Post **after** the bounty opened (22 Nov 2026, 02:00 WIB) and **before**
+  the deadline (25 Nov 2026, 02:00 WIB). A video posted before opening
+  does not count.
+- Post the file exactly as rendered: do not trim it, add effects, or edit
+  it inside TikTok's editor.
+- Do not buy views, use TikTok Promote, or use bots — any of those ends
+  the entry.
+- Keep the video and the account public until the results are out.
+
+## How this repo works
+
+`VIDEO.json` names the TikTok video for the entry. It currently holds a
+placeholder address (`https://www.tiktok.com/@<handle>/video/<id>`) because
+the real post does not exist yet — the placeholder is there on purpose and
+is refused by the submission gate, so nothing can be submitted with it by
+mistake. Once the video is posted, the real URL goes in and the entry is
+submitted.
+
+`main.ts` is the entry's program. It copies `VIDEO.json` from the bot
+directory into the output directory so the harness can read it:
 
 ```sh
-mkdir -p out && MAKEFUN_BOT_DIR=. MAKEFUN_OUTPUT_DIR=out node main.ts
+MAKEFUN_BOT_DIR=. MAKEFUN_OUTPUT_DIR=out node main.ts
 ```
 
-`out/VIDEO.json` is then byte for byte this directory's `VIDEO.json`.
+It needs Node 22 and nothing else — standard library only. The two
+environment variables default to `/bot` and `/output` when they are not
+set. If the copy fails for any reason (for example the file is missing),
+it prints an error and exits non-zero instead of pretending it worked.
+
+## License
+
+MIT — see `LICENSE`.

@@ -1,38 +1,62 @@
-// bring-the-humans-03 entry for make.fun (Node 22, standard library only).
+// bring-the-humans-03 entry point.
 //
-// The entry is the TikTok video itself: an original 15-second vertical ad for
-// make.fun, rendered with ffmpeg in the agent session that submits this entry.
-// This program only hands the video's address to the grader: it copies
-// VIDEO.json from the repository root to /output/VIDEO.json and nothing else.
-// The house reads the video (and its views) from TikTok directly, so nothing
-// this program writes about the video is scored.
+// The bounty harness drops the entry's VIDEO.json into a bot directory and
+// expects the finished artifact to land in an output directory. All this
+// little program does is move that one file from the first place to the
+// second. It deliberately has no other behaviour: no network calls, no
+// extra files, nothing that could surprise the grader.
 //
-// VIDEO.json holds the video's full address once it is posted publicly on
-// TikTok, https://www.tiktok.com/@<handle>/video/<id>. Until then it holds
-// the placeholder below, which the gate refuses on purpose.
-//
-// The ad shows make.fun's brand badge from its first frame and ends on
-// make.fun's referral end card with the entrant's own referral code, both
-// fetched from make.fun's press pack (https://make.fun/press/manifest.json)
-// and used as they are. See README.md for the creative and the caption.
-//
-// Local run (the way the grader runs it, with /bot and /output swapped):
-//   mkdir -p out && MAKEFUN_BOT_DIR=. MAKEFUN_OUTPUT_DIR=out node main.ts
+// It runs on Node 22 using only the standard library.
 
-import { copyFileSync, mkdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { copyFile, mkdir, readFile } from "node:fs/promises";
+import { join } from "node:path";
 
-const BOT_DIR = process.env.MAKEFUN_BOT_DIR ?? '/bot';
-const OUTPUT_DIR = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
+// Where the harness leaves the video pointer, and where it wants it next.
+// Both can be overridden through the environment; the defaults match the
+// paths the kit uses inside its container.
+const botFolder = process.env.MAKEFUN_BOT_DIR ?? "/bot";
+const outputFolder = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
 
-mkdirSync(OUTPUT_DIR, { recursive: true });
+// The single file this entry is about.
+const videoPointerName = "VIDEO.json";
 
-const source = join(BOT_DIR, 'VIDEO.json');
-const target = join(OUTPUT_DIR, 'VIDEO.json');
+async function handOverVideoPointer(): Promise<void> {
+  const origin = join(botFolder, videoPointerName);
+  const destination = join(outputFolder, videoPointerName);
 
-try {
-  copyFileSync(source, target);
-} catch (err) {
-  console.error(`Could not copy VIDEO.json from ${source}: ${(err as Error).message}`);
-  process.exit(1);
+  // Make sure the destination folder exists before we try to write into it.
+  await mkdir(outputFolder, { recursive: true });
+
+  // Check the file is real, parseable JSON before handing it over, so a
+  // broken pointer can never slip through as a silent successful copy.
+  const rawText = await readFile(origin, "utf8");
+  const parsed = JSON.parse(rawText) as unknown;
+  if (
+    typeof parsed !== "object" ||
+    parsed === null ||
+    typeof (parsed as { url?: unknown }).url !== "string"
+  ) {
+    throw new Error(`${origin} is not a JSON object with a string "url"`);
+  }
+
+  // One plain copy; if the source is missing or unreadable this throws and
+  // the failure surfaces in main() below.
+  await copyFile(origin, destination);
+
+  console.log(`VIDEO.json delivered: ${origin} -> ${destination}`);
 }
+
+async function main(): Promise<void> {
+  try {
+    await handOverVideoPointer();
+  } catch (problem) {
+    const detail =
+      problem instanceof Error ? problem.message : String(problem);
+    console.error(
+      `Could not deliver VIDEO.json from ${botFolder} to ${outputFolder}: ${detail}`,
+    );
+    process.exit(1);
+  }
+}
+
+await main();
